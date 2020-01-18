@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cosmosdb-prom
+  name: cosmosdb-prom
+spec:
+  ports:
+    - name: http
+      port: 9090
+      protocol: TCP
+      targetPort: 1234
+  selector:
+    app: cosmosdb-prom
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cosmosdb-prom
+  name: cosmosdb-prom
+spec:
+  selector:
+    matchLabels:
+      app: cosmosdb-prom
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cosmosdb-prom
+    spec:
+      containers:
+        - name: cosmosdb-prom
+          image: "alexeldeib/cosmosdb-prom:latest"
+          ports:
+            - containerPort: 1234
