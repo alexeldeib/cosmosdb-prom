@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,11 +10,11 @@ import (
 	"github.com/a8m/documentdb"
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/snappy"
+	"github.com/google/uuid"
 	"github.com/motemen/go-loghttp"
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/prompb"
 	flag "github.com/spf13/pflag"
-	"github.com/google/uuid"
 )
 
 type timeseries struct {
@@ -44,13 +43,7 @@ func newServer(url, key, dbName, collection string) (*server, error) {
 			Key: key,
 		},
 		Client: http.Client{
-			Transport: &loghttp.Transport{
-				LogRequest: func(req *http.Request) {
-					body, _ := ioutil.ReadAll(req.Body)
-					fmt.Printf("%s", string(body))
-					req.Body = ioutil.NopCloser(bytes.NewReader(body))
-				},
-			},
+			Transport: &loghttp.Transport{},
 		},
 	})
 
@@ -125,7 +118,7 @@ func (s *server) receive(w http.ResponseWriter, r *http.Request) {
 			Labels:  ts.Labels,
 			Samples: ts.Samples,
 		}); err != nil {
-			log.Fatalf("failed to upsert timeseries: %v", err)
+			log.Printf("failed to upsert timeseries: %v", err)
 		}
 	}
 }
